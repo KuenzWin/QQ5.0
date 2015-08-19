@@ -1,6 +1,8 @@
 package com.kuenzWin.qq.view;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.ViewDragHelper;
 import android.util.AttributeSet;
@@ -10,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.kuenzWin.qq.utils.LogUtils;
+import com.nineoldandroids.view.ViewHelper;
 
 public class DragLayout extends FrameLayout {
 
@@ -115,6 +118,9 @@ public class DragLayout extends FrameLayout {
 						0 + mHeight);
 			}
 
+			// 分发拖拽事件，执行伴随动画
+			dispatchEvent(mMainLeft);
+
 			// 经过查看源码时发现Android2.3的view位置改变后并不进行界面重绘，
 			// 而Android4.0以上则会进行重绘，因而，如果不加上这一句代码就会
 			// 发生在Android4.0以上的版本可以发送拉拽而Android4.02.3的就不行
@@ -141,6 +147,73 @@ public class DragLayout extends FrameLayout {
 	// 由ViewDragHelper判断是否需要拦截Touch事件进行处理
 	public boolean onInterceptTouchEvent(MotionEvent ev) {
 		return mHelper.shouldInterceptTouchEvent(ev);
+	}
+
+	/**
+	 * 分发拖拽事件，执行伴随动画
+	 * 
+	 * @param mMainLeft
+	 */
+
+	protected void dispatchEvent(int mMainLeft) {
+		float percent = mMainLeft * 1.0f / mRange;
+		LogUtils.d("percent:" + percent);
+		// 主面板：缩放动画,随着左面板的增大，主面板减小
+		// 0.8f-1.0f
+		ViewHelper.setScaleX(mMainContent, evaluate(percent, 1.0f, 0.8f));
+		ViewHelper.setScaleY(mMainContent, evaluate(percent, 1.0f, 0.8f));
+		// 左面板：缩放动画、平移动画、
+		// 0.5f~1.0f
+		ViewHelper.setScaleX(mLeftContent, evaluate(percent, 0.5f, 1.0f));
+		ViewHelper.setScaleY(mLeftContent, evaluate(percent, 0.5f, 1.0f));
+		ViewHelper.setTranslationX(mLeftContent,
+				evaluate(percent, -mWidth / 2.0, 0));
+		// 透明度动画
+		ViewHelper.setAlpha(mLeftContent, evaluate(percent, 0.0f, 1.0f));
+
+		getBackground().setColorFilter(
+				evaluateColor(percent, Color.BLACK, Color.TRANSPARENT),
+				PorterDuff.Mode.SRC_OVER);
+	}
+
+	/**
+	 * Float估值器
+	 * 
+	 * @param fraction
+	 * @param startValue
+	 * @param endValue
+	 * @return
+	 */
+	public Float evaluate(float fraction, Number startValue, Number endValue) {
+		float startFloat = startValue.floatValue();
+		return startFloat + fraction * (endValue.floatValue() - startFloat);
+	}
+
+	/**
+	 * 颜色变换器
+	 * 
+	 * @param fraction
+	 * @param startValue
+	 * @param endValue
+	 * @return
+	 */
+	public int evaluateColor(float fraction, Object startValue, Object endValue) {
+		int startInt = (Integer) startValue;
+		int startA = (startInt >> 24) & 0xff;
+		int startR = (startInt >> 16) & 0xff;
+		int startG = (startInt >> 8) & 0xff;
+		int startB = startInt & 0xff;
+
+		int endInt = (Integer) endValue;
+		int endA = (endInt >> 24) & 0xff;
+		int endR = (endInt >> 16) & 0xff;
+		int endG = (endInt >> 8) & 0xff;
+		int endB = endInt & 0xff;
+
+		return (int) ((startA + (int) (fraction * (endA - startA))) << 24)
+				| (int) ((startR + (int) (fraction * (endR - startR))) << 16)
+				| (int) ((startG + (int) (fraction * (endG - startG))) << 8)
+				| (int) ((startB + (int) (fraction * (endB - startB))));
 	}
 
 	/**
