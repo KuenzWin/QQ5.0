@@ -4,5 +4,6 @@
     <string name="app_name">QQ5.0</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
+    <string name="title_activity_go">GoActivity</string>
 
 </resources>

@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import com.kuenzWin.qq.view.DragLayout;
 import com.kuenzWin.qq.view.DragLayout.OnDragStateChangeListener;
+import com.kuenzWin.qq.view.DragRelativeLayout;
 import com.nineoldandroids.animation.ObjectAnimator;
 import com.nineoldandroids.view.ViewHelper;
 
@@ -32,6 +33,8 @@ public class MainActivity extends Activity implements OnDragStateChangeListener 
 
 	private ImageView mIv_header;
 	private ImageView mIv_leftHeader;
+
+	private DragRelativeLayout mDragRelativeLayout;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -54,9 +57,13 @@ public class MainActivity extends Activity implements OnDragStateChangeListener 
 		mIv_header = (ImageView) this.findViewById(R.id.iv_header);
 		mIv_leftHeader = (ImageView) this.findViewById(R.id.iv_left_header);
 
+		mDragRelativeLayout = (DragRelativeLayout) this
+				.findViewById(R.id.rl_main);
+
 		mDragLayout = (DragLayout) this.findViewById(R.id.dl);
 		mDragLayout.setOnDragStateChangeListener(this);
 
+		mDragRelativeLayout.setDragLayout(mDragLayout);
 	}
 
 	private void setData() {
@@ -129,7 +136,7 @@ public class MainActivity extends Activity implements OnDragStateChangeListener 
 		ObjectAnimator oa = ObjectAnimator.ofFloat(mIv_header, "translationX",
 				15f);
 		// 设置震动的圈数
-		oa.setInterpolator(new CycleInterpolator(4f));
+		oa.setInterpolator(new CycleInterpolator(2f));
 		// 设置震动的时间
 		oa.setDuration(500);
 		// 开始震动

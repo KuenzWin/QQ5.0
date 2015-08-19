@@ -26,7 +26,8 @@
             android:layout_height="match_parent" />
     </LinearLayout>
 
-    <RelativeLayout
+    <com.kuenzWin.qq.view.DragRelativeLayout
+        android:id="@+id/rl_main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#ffffff" >
@@ -57,6 +58,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@+id/rl_header" />
-    </RelativeLayout>
+    </com.kuenzWin.qq.view.DragRelativeLayout>
 
 </com.kuenzWin.qq.view.DragLayout>
