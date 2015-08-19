@@ -39,6 +39,51 @@ public class DragLayout extends FrameLayout {
 	 */
 	private int mRange;
 
+	/**
+	 * 状态
+	 * 
+	 * @author KuenzWin
+	 * @date 2015-8-20
+	 */
+	public static enum Status {
+		Open, Close, Draging
+	}
+
+	public static interface OnDragStateChangeListener {
+		void onOpen();
+
+		void onClose();
+
+		void onDraging(float percent);
+	}
+
+	/**
+	 * 状态位,初始化状态为关闭
+	 */
+	private Status mStatus = Status.Close;
+
+	public Status getStatus() {
+		return mStatus;
+	}
+
+	public void setStatus(Status mStatus) {
+		this.mStatus = mStatus;
+	}
+
+	/**
+	 * 拉拽状态改变监听器
+	 */
+	private OnDragStateChangeListener onDragStateChangeListener;
+
+	public void setOnDragStateChangeListener(
+			OnDragStateChangeListener onDragStateChangeListener) {
+		this.onDragStateChangeListener = onDragStateChangeListener;
+	}
+
+	public OnDragStateChangeListener getOnDragStateChangeListener() {
+		return onDragStateChangeListener;
+	}
+
 	public DragLayout(Context context) {
 		this(context, null);
 	}
@@ -158,6 +203,44 @@ public class DragLayout extends FrameLayout {
 	protected void dispatchEvent(int mMainLeft) {
 		float percent = mMainLeft * 1.0f / mRange;
 		LogUtils.d("percent:" + percent);
+		animView(percent);
+
+		// 更新状态
+		Status lastStatus = mStatus;
+		mStatus = updateStatus(percent);
+		if(lastStatus != mStatus && onDragStateChangeListener != null){
+				if(mStatus == Status.Open)
+					onDragStateChangeListener.onOpen();
+				else if(mStatus == Status.Close)
+					onDragStateChangeListener.onClose();
+				else
+					onDragStateChangeListener.onDraging(percent);
+			}
+	}
+
+	/**
+	 * 由拉拽百分比获取当前的最新状态
+	 * 
+	 * @param percent
+	 *            拉拽百分比
+	 */
+	private Status updateStatus(float percent) {
+		if (percent == 0)
+			mStatus = Status.Close;
+		else if (percent == 1)
+			mStatus = Status.Open;
+		else
+			mStatus = Status.Draging;
+		return mStatus;
+	}
+
+	/**
+	 * 执行拉拽状态
+	 * 
+	 * @param percent
+	 *            拉拽百分比
+	 */
+	private void animView(float percent) {
 		// 主面板：缩放动画,随着左面板的增大，主面板减小
 		// 0.8f-1.0f
 		ViewHelper.setScaleX(mMainContent, evaluate(percent, 1.0f, 0.8f));
